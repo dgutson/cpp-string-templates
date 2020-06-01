@@ -46,13 +46,13 @@ class StrTemplate
     {
         auto it = lines.begin();
         auto pos = std::string::npos;
-        
+
         while (it != lines.end() && pos == std::string::npos)
         {
             pos = it->find(target);
             ++it;
         }
-        
+
         auto found = pos != std::string::npos;
         if (found)
         {
@@ -101,7 +101,7 @@ public:
 
             return *this;
         }
-        
+
         LineMaker(const LineMaker& other) = delete;
         LineMaker(StrTemplate* parent) : parent(parent) {}
         LineMaker(LineMaker&& other) : parent(other.parent)
@@ -109,7 +109,7 @@ public:
             lines = std::move(other.lines);
             other.parent = nullptr;
         }
-        
+
         ~LineMaker()
         {
             if (parent != nullptr)
@@ -118,25 +118,25 @@ public:
             }
         }
     };
-    
+
     StrTemplate() = default;
     StrTemplate(const StrTemplate& other) = delete;
     StrTemplate(StrTemplate&& other)
     {
         lines = std::move(other.lines);
     }
-    
+
     LineMaker operator()()
     {
         return LineMaker(this);
     }
-    
+
     StrTemplate& operator+=(const StrTemplate& other)
     {
         lines.insert(lines.end(), other.lines.begin(), other.lines.end());
         return *this;
     }
-    
+
     bool replace(unsigned int placeholder, const StrTemplate& other)
     {
         return replaceAll("$" + std::to_string(placeholder), other);
@@ -160,7 +160,48 @@ public:
         temp() + str;
         return replace(key, temp);
     }
-    
+
+    void changeIndent4to8(bool throwIfNotIn4spaces = false)
+    {
+        for (auto& line : lines)
+        {
+            const auto pos = line.find_first_not_of(' ');
+            if (pos != std::string::npos)
+            {
+                if (pos % 4 == 0)
+                {
+                    line.insert(0, std::string(pos, ' '));
+                }
+                else if (throwIfNotIn4spaces)
+                {
+                    throw "Line '" + line + "' not indented in 4 spaces";
+                }
+            }
+        }
+    }
+
+    void changeBracingAllmanToKR()
+    {
+        auto prev = lines.begin();
+        auto current = prev;
+        current++;
+        while (current != lines.end())
+        {
+            const auto brace = current->find_first_not_of(' ');
+            if (brace != std::string::npos && (*current)[brace] == '{' &&
+                current->find_first_not_of(' ', brace + 1) == std::string::npos)
+            {
+                *prev += " {";
+                prev = current;
+                current = lines.erase(current);
+            }
+            else
+            {
+                prev = current;
+                ++current;
+            }
+        }
+    }
 
     std::string text() const
     {
@@ -174,4 +215,3 @@ public:
 };
 
 #endif
-
