@@ -26,12 +26,14 @@ StrTemplate for_body()
     StrTemplate b;
 
     b() +
-    "if (i == 0)"+
-    "{          "+
-    "    f2($1); "+
+    "if (i == 0)    "+
+    "{              "+
+    "    f2($1);    "+
+    "    $remove_me$"+
     "}";
 
     b.replace(1, f2());
+    b.remove("remove_me");  // replacing by "" leaves an empty line
     return b;
 }
 
@@ -51,8 +53,8 @@ int main()
     "}";
 
     main.replace(1, heading());
-    main.replace(2, "\"hello\"");
-    main.replace("for_body", for_body());
+    main.replace(2, "\"hello\"");           // placeholders can be numbers
+    main.replace("for_body", for_body());   // or string keys
 
     main.changeIndent4to8();
     main.changeBracingAllmanToKR();

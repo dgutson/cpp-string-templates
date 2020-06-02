@@ -89,6 +89,40 @@ class StrTemplate
         return replaced;
     }
 
+    bool removeOne(const std::string& target)
+    {
+        auto it = lines.begin();
+        auto pos = std::string::npos;
+
+        while (it != lines.end() && pos == std::string::npos)
+        {
+            pos = it->find(target);
+            ++it;
+        }
+
+        auto found = pos != std::string::npos;
+        if (found)
+        {
+            --it;
+            it->erase(pos, target.length());
+            if (it->empty() || it->find_first_not_of(' ') == std::string::npos)
+            {
+                lines.erase(it);
+            }
+        }
+        return found;
+    }
+
+    bool removeAll(const std::string& target)
+    {
+        auto removed = false;
+        while (removeOne(target))
+        {
+            removed = true;
+        }
+        return removed;
+    }
+
 public:
     class LineMaker
     {
@@ -159,6 +193,16 @@ public:
         StrTemplate temp;
         temp() + str;
         return replace(key, temp);
+    }
+
+    bool remove(const std::string& key)
+    {
+        return removeAll("$" + key + "$");
+    }
+
+    bool remove(unsigned int placeholder)
+    {
+        return removeAll("$" + std::to_string(placeholder));
     }
 
     void changeIndent4to8(bool throwIfNotIn4spaces = false)
