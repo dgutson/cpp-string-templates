@@ -247,6 +247,11 @@ public:
         }
     }
 
+    bool empty() const
+    {
+        return lines.empty();
+    }
+
     std::string text() const
     {
         std::string output;
